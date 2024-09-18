@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/x-icon" href="/img/c045766b1c8d773a4be4714d41be5b07.jpg">
+  <title>Discord 10MB Plus</title>
+
+  <style>
+    @font-face {
+      font-family: 'IBMPlexSerif';
+      src: url('https://cdn.jsdelivr.net/gh/IBM/plex@master/packages/plex-serif/fonts/complete/woff2/IBMPlexSerif-Medium.woff2') format('woff2');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'IBMPlexSerif', serif;
+    }
+
+    body {
+      background-color: #121212;
+      color: #f0f0f0;
+      font-family: 'IBMPlexSerif', serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background-color: #1e1e1e;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .container h2 {
+      margin-bottom: 15px;
+      color: #ff8800;
+    }
+
+    .input-container {
+      margin-bottom: 15px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ff8800;
+      border-radius: 5px;
+      background-color: #2c2c2c;
+      color: #f0f0f0;
+    }
+
+    input::placeholder {
+      color: #bbb;
+    }
+
+    input[type="file"] {
+      margin-top: 10px;
+      color: #f0f0f0;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      border-radius: 5px;
+      background-color: #ff8800;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      letter-spacing: 0.4em;
+      transition: all 0.4s ease-in-out;
+    }
+
+    button:hover {
+      background-color: #ff9c33;
+      letter-spacing: 0.1em;
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+
+    p {
+      color: gray;
+      font-size: 0.9em;
+      margin-top: 20px;
+    }
+
+    button:disabled {
+      background-color: #444;
+      cursor: not-allowed;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Send a File</h2>
+    <form id="uploadForm">
+      <div class="input-container">
+        <input type="text" id="webhookUrl" placeholder="Your Webhook URL" required>
+      </div>
+      <div class="input-container">
+        <input type="file" id="fileInput" accept="*/*" required>
+      </div>
+      <button type="submit" id="sendBtn">SEND</button>
+    </form>
+    <p>To bypass new limit of 10 MB Uploads on Discord you can use bots and webhooks to send files up to 25MB.</p>
+  </div>
+
+  <script>
+    document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const webhookUrl = document.getElementById('webhookUrl').value;
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+
+      if (!webhookUrl || !file) {
+        alert('Please enter a webhook URL and select a file.');
+        return;
+      }
+
+      if (file.size > 25 * 1024 * 1024) {
+        alert('File exceeds 25MB limit.');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          alert('File sent successfully!');
+        } else {
+          alert('Error sending file.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to send file.');
+      }
+    });
+  </script>
+
+</body>
+</html>
