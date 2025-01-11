@@ -12,28 +12,53 @@
 
     <div class="content">
         <div class="categories">
-            <div class="category active" id="webhook">WEBHOOK</div>
+            <div class="category active" id="webhook">HOOK25</div>
         </div>
-        
+
         <div class="inputs">
             <input type="text" id="token-input" placeholder="Webhook URL" required>
             <input type="text" id="thread-id" placeholder="Optional Thread ID">
+            <input type="text" id="optional-message" placeholder="Optional Message">
+        </div>
+
+        <div class="file-info">
+            <p id="file-name">No file selected</p>
+            <p id="file-size"></p>
         </div>
 
         <div class="buttons">
             <div class="btn choose-file">Choose a file</div>
             <div class="btn send">SEND</div>
         </div>
+
+        <div class="notification" id="notification" style="display: none;"></div>
     </div>
 
     <script>
         const tokenInput = document.getElementById('token-input');
         const threadIdInput = document.getElementById('thread-id');
+        const optionalMessageInput = document.getElementById('optional-message');
+        const fileNameDisplay = document.getElementById('file-name');
+        const fileSizeDisplay = document.getElementById('file-size');
+        const notification = document.getElementById('notification');
         let selectedFile = null;
 
-        async function sendViaWebhook(webhookUrl, file, threadId = null) {
+        function showNotification(message, type) {
+            notification.textContent = message;
+            notification.style.backgroundColor = type === 'error' ? '#cc2900' : '#ff5500';
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        async function sendViaWebhook(webhookUrl, file, threadId = null, message = '') {
             const formData = new FormData();
             formData.append('file', file);
+            if (message) {
+                formData.append('content', message);
+            }
+
             const url = threadId
                 ? `${webhookUrl}?thread_id=${threadId}`
                 : webhookUrl;
@@ -45,15 +70,16 @@
                 });
 
                 if (response.ok) {
-                    alert('File sent successfully via Webhook!');
+                    showNotification('File sent successfully!', 'success');
                 } else {
-                    alert('Error sending file via Webhook: ' + response.statusText);
+                    showNotification('Error sending file: ' + response.statusText, 'error');
                 }
             } catch (error) {
                 console.error('Network error while sending via Webhook:', error);
-                alert('Failed to send file due to network error.');
+                showNotification('Failed to send file due to network error.', 'error');
             }
         }
+
         document.querySelector('.choose-file').addEventListener('click', () => {
             const inputFile = document.createElement('input');
             inputFile.type = 'file';
@@ -63,23 +89,28 @@
                 selectedFile = this.files[0];
 
                 if (selectedFile.size > 25 * 1024 * 1024) {
-                    alert('File must be smaller than 25MB!');
+                    showNotification('File must be smaller than 25MB!', 'error');
                     selectedFile = null;
+                    fileNameDisplay.textContent = 'No file selected';
+                    fileSizeDisplay.textContent = '';
                 } else {
-                    console.log('File selected:', selectedFile.name);
+                    fileNameDisplay.textContent = `${selectedFile.name}`;
+                    fileSizeDisplay.textContent = `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`;
                 }
             };
 
             inputFile.click();
         });
+
         document.querySelector('.send').addEventListener('click', () => {
             const webhookUrl = tokenInput.value;
             const threadId = threadIdInput.value;
+            const optionalMessage = optionalMessageInput.value;
 
             if (selectedFile && webhookUrl) {
-                sendViaWebhook(webhookUrl, selectedFile, threadId);
+                sendViaWebhook(webhookUrl, selectedFile, threadId, optionalMessage);
             } else {
-                alert('Please select a file and fill in the required fields!');
+                showNotification('Please select a file and fill in the required fields!', 'error');
             }
         });
     </script>
@@ -97,23 +128,26 @@
 
         body, html {
             height: 100%;
-            font-family: 'Arial', sans-serif;
+            background-color: #1a1a1a;
+            color: #ff9900;
         }
+
         .background {
             position: fixed;
             width: 100%;
             height: 100%;
-            background: url('src/wo9mera0hbob1.jpg') no-repeat center center/cover;
+            background: radial-gradient(circle, #2d2d2d, #1a1a1a);
             z-index: -1;
         }
+
         .overlay {
             position: fixed;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.8);
             z-index: 0;
         }
+
         .content {
             position: relative;
             width: 100%;
@@ -123,13 +157,14 @@
             align-items: center;
             justify-content: center;
             z-index: 1;
-            color: white;
         }
+
         .categories {
             display: flex;
             gap: 10px;
             letter-spacing: 0.5em;
             margin-bottom: 20px;
+            color: #ff7700;
         }
 
         .category {
@@ -139,8 +174,9 @@
         }
 
         .category.active {
-            color: #ff9900;
+            color: #ff5500;
         }
+
         .inputs {
             display: flex;
             flex-direction: column;
@@ -154,7 +190,20 @@
             border: none;
             border-radius: 5px;
             font-size: 1em;
+            background-color: #1a1a1a;
+            color: #ff9900;
+            border: 2px solid #ff5500;
         }
+
+        input::placeholder {
+            color: #ff7700;
+        }
+
+        .file-info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
         .buttons {
             display: flex;
             flex-direction: column;
@@ -165,16 +214,34 @@
             width: 300px;
             padding: 10px;
             text-align: center;
-            background-color: #ff9900;
+            background: linear-gradient(45deg, #ff5500, #ff9900);
             border-radius: 5px;
             cursor: pointer;
             text-transform: uppercase;
             font-weight: bold;
+            color: #1a1a1a;
             transition: background-color 0.3s;
         }
 
         .btn:hover {
-            background-color: #cc7a00;
+            background: linear-gradient(45deg, #ff3300, #ff8800);
+        }
+
+        .btn:active {
+            background: linear-gradient(45deg, #cc2900, #cc7a00);
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            z-index: 100;
         }
     </style>
 </body>
