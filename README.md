@@ -1,3 +1,14 @@
+# UPDATE
+As of today ( 21st of January 2025 ) this specific method of sending files above 10MB has been patched. <br>
+New file size limit for webhooks is ~ 9MB.  <br>
+
+
+
+
+
+
+
+
 # Hook25MB
 A very simple website that lets you upload files to webhook that are up to 25MB.
 
